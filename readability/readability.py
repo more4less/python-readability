@@ -1,7 +1,9 @@
 #!/usr/bin/env python
+
 import logging
 import re
 import sys
+import six
 
 from collections import defaultdict
 from lxml.etree import tostring
@@ -105,6 +107,7 @@ class Document:
             - url: will allow adjusting links to be absolute
             - positive_keywords: the list of positive search patterns in classes and ids, for example: ["news-item", "block"]
             - negative_keywords: the list of negative search patterns in classes and ids, for example: ["mysidebar", "related", "ads"]
+            - unwanted_tags: strips given tags.
             Also positive_keywords and negative_keywords could be a regexp.
         """
         self.input = input
@@ -113,6 +116,12 @@ class Document:
         self.encoding = None
         self.positive_keywords = compile_pattern(positive_keywords)
         self.negative_keywords = compile_pattern(negative_keywords)
+        self.unwanted_tags = set(options.pop('unwanted_tags', []))
+
+    def strip_tags(self, elt):
+        for tag in self.unwanted_tags:
+            for elt in elt.xpath('.//%s' % tag):
+                elt.getparent().remove(elt)
 
     def _html(self, force=False):
         if force or self.html is None:
@@ -182,7 +191,11 @@ class Document:
                         article = self.html.find('body')
                         if article is None:
                             article = self.html
+
+                self.strip_tags(article)
                 cleaned_article = self.sanitize(article, candidates)
+                assert isinstance(cleaned_article, six.string_types)
+
                 article_length = len(cleaned_article or '')
                 retry_length = self.options.get(
                     'retry_length',

@@ -23,9 +23,9 @@ setup(
     url="http://github.com/buriy/python-readability",
     packages=['readability'],
     install_requires=[
-        "chardet",
+        "chardet", "cssselect", 'six',
         lxml_requirement
-        ],
+    ],
     classifiers=[
         "Environment :: Web Environment",
         "Intended Audience :: Developers",
