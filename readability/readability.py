@@ -569,6 +569,9 @@ class Document:
                 pass
 
         self.html = node
+        for elt in self.html.xpath('//p'):
+            elt.tail = '\n\n'
+
         return self.get_clean_html()
 
 
